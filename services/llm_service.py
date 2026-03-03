@@ -1,11 +1,19 @@
 import os
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 from models.preferences import UserPreferences, RestaurantItem
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY", ""))
+_client: genai.Client | None = None
+
+
+def get_client() -> genai.Client:
+    global _client
+    if _client is None:
+        _client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", ""))
+    return _client
+
 
 PROMPT_TEMPLATE = """You are a friendly and knowledgeable restaurant recommendation assistant.
 
@@ -58,8 +66,11 @@ async def get_llm_recommendation(
     )
 
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = await model.generate_content_async(prompt)
+        client = get_client()
+        response = await client.aio.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+        )
         return response.text
     except Exception as e:
         return (

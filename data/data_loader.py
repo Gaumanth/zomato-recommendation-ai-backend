@@ -52,6 +52,9 @@ def clean_dataset(df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(subset=["name", "rating", "cost_for_two"])
     df = df[df["name"].str.lower() != "nan"]
 
+    # Keep only the 5 columns the app needs — drops everything else
+    df = df[["name", "cuisines", "rating", "cost_for_two", "city"]]
+
     df = df.reset_index(drop=True)
     return df
 
